@@ -15,6 +15,7 @@ module.exports = function(grunt) {
                      'src/tooltip.js',
                      'src/utils.js',
                      'src/models/axis.js',
+                      /*
                      'src/models/historicalBar.js',
                      'src/models/bullet.js',
                      'src/models/bulletChart.js',
@@ -22,11 +23,16 @@ module.exports = function(grunt) {
                      'src/models/discreteBar.js',
                      'src/models/discreteBarChart.js',
                      'src/models/distribution.js',
+                     */
+                     'src/models/flLineChart.js',
+                     /*
                      'src/models/historicalBar.js',
                      'src/models/historicalBarChart.js',
                      'src/models/indentedTree.js',
+                     */
                      'src/models/legend.js',
                      'src/models/line.js',
+                     /*
                      'src/models/lineChart.js',
                      'src/models/linePlusBarChart.js',
                      'src/models/lineWithFocusChart.js',
@@ -37,15 +43,18 @@ module.exports = function(grunt) {
                      'src/models/multiBarHorizontalChart.js',
                      'src/models/multiChart.js',
                      'src/models/ohlcBar.js',
+                     */
                      'src/models/pie.js',
                      'src/models/pieChart.js',
                      'src/models/scatter.js',
+                     /*
                      'src/models/scatterChart.js',
                      'src/models/scatterPlusLineChart.js',
                      'src/models/sparkline.js',
                      'src/models/sparklinePlus.js',
                      'src/models/stackedArea.js',
                      'src/models/stackedAreaChart.js',
+                     */
                      'src/outro.js'
                      ],
                 dest: 'nv.d3.js'
