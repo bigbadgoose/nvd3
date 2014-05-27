@@ -143,13 +143,12 @@ nv.models.flLineChart = function() {
       var g = wrap.select('g');
 
       gEnter.append("rect").style("opacity",0);
-      gEnter.append('g').attr('class', 'nv-x nv-axis');
 
+      gEnter.append('g').attr('class', 'nv-y nv-axis');
+      gEnter.append('g').attr('class', 'nv-x nv-axis');
       if (showX2Axis) {
         gEnter.append('g').attr('class', 'nv-x2 nv-axis');
       }
-
-      gEnter.append('g').attr('class', 'nv-y nv-axis');
       gEnter.append('g').attr('class', 'nv-linesWrap');
       gEnter.append('g').attr('class', 'nv-legendWrap');
       gEnter.append('g').attr('class', 'nv-interactive');
