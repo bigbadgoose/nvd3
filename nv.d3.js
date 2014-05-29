@@ -1422,11 +1422,22 @@ nv.utils.optionsFunc = function(args) {
   return chart;
 }
 
+/* ----------------------------------------------------------------------------
+ *
+ * FL LINE CHART
+ *
+ * line chart with fancier "comb" style x-axis
+ * and customized look and feel
+ *
+ * ----------------------------------------------------------------------------
+ */
+
 nv.models.flLineChart = function() {
   "use strict";
-  //============================================================
-  // Public Variables with Default Settings
-  //------------------------------------------------------------
+
+
+
+  // ------------------------ Public Variables with Default Settings
 
   var lines = nv.models.line()
     , xAxis = nv.models.axis()
@@ -1436,16 +1447,17 @@ nv.models.flLineChart = function() {
     , interactiveLayer = nv.interactiveGuideline()
     ;
 
-  // TODO Y2Axis, yOffset
+  // TODO Y2Axis
   var margin = {top: 30, right: 20, bottom: 50, left: 60}
     , color = nv.utils.defaultColor()
     , width = null
     , height = null
     , showLegend = true
-    , showXAxis = true
-    , showX2Axis = true             // draw minor ticks
-    , showYAxis = true
-    , axisOffset = { x: 0, y: 0 }   // move axis away from graph
+    , showXAxis = true                      // x-grid lines
+    , showYAxis = true                      // y-grid lines
+    , axisOffset = { xAxis: 0, yAxis: 0 }   // translate grid lines
+    , showX2Axis = true                     // x-axis "comb"
+    , x2AxisOffset = 7                      // move x-axis away from graph; prevents occlusion by plot lines
     , rightAlignYAxis = false
     , useInteractiveGuideline = false
     , tooltips = true
@@ -1476,12 +1488,9 @@ nv.models.flLineChart = function() {
     .orient((rightAlignYAxis) ? 'right' : 'left')
     ;
 
-  //============================================================
 
 
-  //============================================================
-  // Private Variables
-  //------------------------------------------------------------
+  // ------------------------ Private Variables
 
   var showTooltip = function(e, offsetElement) {
     var left = e.pos[0] + ( offsetElement.offsetLeft || 0 ),
@@ -1492,8 +1501,6 @@ nv.models.flLineChart = function() {
 
     nv.tooltip.show([left, top], content, null, null, offsetElement);
   };
-
-  //============================================================
 
 
   function chart(selection) {
@@ -1506,13 +1513,11 @@ nv.models.flLineChart = function() {
           availableHeight = (height || parseInt(container.style('height')) || 400)
                              - margin.top - margin.bottom;
 
-
       chart.update = function() { container.transition().duration(transitionDuration).call(chart) };
       chart.container = this;
 
-      //set state.disabled
+      // -- set state.disabled
       state.disabled = data.map(function(d) { return !!d.disabled });
-
 
       if (!defaultState) {
         var key;
@@ -1525,9 +1530,7 @@ nv.models.flLineChart = function() {
         }
       }
 
-      //------------------------------------------------------------
-      // Display noData message if there's nothing to show.
-
+      // -- Display noData message if there's nothing to show.
       if (!data || !data.length || !data.filter(function(d) { return d.values.length }).length) {
         var noDataText = container.selectAll('.nv-noData').data([noData]);
 
@@ -1546,33 +1549,28 @@ nv.models.flLineChart = function() {
         container.selectAll('.nv-noData').remove();
       }
 
-      //------------------------------------------------------------
 
 
-      //------------------------------------------------------------
-      // Setup Scales
+      // -------------------- Setup Scales
 
       x = lines.xScale();
       y = lines.yScale();
 
-      //------------------------------------------------------------
 
 
-      //------------------------------------------------------------
-      // Setup containers and skeleton of chart
+      // -------------------- Setup containers and skeleton of chart
 
       var wrap = container.selectAll('g.nv-wrap.nv-lineChart').data([data]);
-      var gEnter = wrap.enter().append('g').attr('class', 'nvd3 nv-wrap nv-lineChart').append('g');
+      var gEnter = wrap.enter().append('g').attr('class', 'nvd3 nv-wrap nv-lineChart nv-flLineChart').append('g');
       var g = wrap.select('g');
 
       gEnter.append("rect").style("opacity",0);
-      gEnter.append('g').attr('class', 'nv-x nv-axis');
 
+      gEnter.append('g').attr('class', 'nv-y nv-axis');
+      gEnter.append('g').attr('class', 'nv-x nv-axis');
       if (showX2Axis) {
         gEnter.append('g').attr('class', 'nv-x2 nv-axis');
       }
-
-      gEnter.append('g').attr('class', 'nv-y nv-axis');
       gEnter.append('g').attr('class', 'nv-linesWrap');
       gEnter.append('g').attr('class', 'nv-legendWrap');
       gEnter.append('g').attr('class', 'nv-interactive');
@@ -1580,9 +1578,8 @@ nv.models.flLineChart = function() {
       g.select("rect")
         .attr("width",availableWidth)
         .attr("height",(availableHeight > 0) ? availableHeight : 0);
-      //------------------------------------------------------------
-      // Legend
 
+      // -- Legend
       if (showLegend) {
         legend.width(availableWidth);
 
@@ -1600,8 +1597,7 @@ nv.models.flLineChart = function() {
             .attr('transform', 'translate(0,' + (-margin.top) +')')
       }
 
-      //------------------------------------------------------------
-
+      // -- Other stuff
       wrap.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
       if (rightAlignYAxis) {
@@ -1609,12 +1605,14 @@ nv.models.flLineChart = function() {
               .attr("transform", "translate(" + availableWidth + ",0)");
       }
 
-      //------------------------------------------------------------
-      // Main Chart Component(s)
 
 
-      //------------------------------------------------------------
-      //Set up interactive layer
+      // -------------------- MAIN CHART COMPONENT(S)
+
+
+
+      // -------------------- Set up interactive layer
+
       if (useInteractiveGuideline) {
         interactiveLayer
            .width(availableWidth)
@@ -1639,54 +1637,45 @@ nv.models.flLineChart = function() {
 
       linesWrap.transition().call(lines);
 
-      //------------------------------------------------------------
 
 
-      //------------------------------------------------------------
-      // Setup Axes
+      // -------------------- Setup Axes
 
       if (showXAxis) {
-        var xOffset = axisOffset.x;
-
+        var xOffset = axisOffset.xAxis;
         xAxis.scale(x)
-             .ticks( availableWidth / 100 )
+             .ticks(availableWidth / 100)
              .tickSize(-availableHeight, 6);
-
         g.select('.nv-x.nv-axis')
-         .attr('transform', 'translate(0,' + (y.range()[0] + xOffset) + ')');
-        g.select('.nv-x.nv-axis')
+         .attr('transform', 'translate(0,' + (y.range()[0] + xOffset) + ')')
          .transition()
          .call(xAxis);
+      }
 
-        if (showX2Axis) {
-          x2Axis.scale(x)
-                .ticks( availableWidth / 100 )
-                .tickSize(6, 0);
-
-          g.select('.nv-x2.nv-axis')
-           .attr('transform', 'translate(0,' + (y.range()[0] + xOffset) + ')');
-          g.select('.nv-x2.nv-axis')
-           .transition()
-           .call(x2Axis);
-        }
+      if (showX2Axis) {
+        var x2Offset = x2AxisOffset;
+        x2Axis.scale(x).ticks(availableWidth / 100).tickSize(6, 6);
+        g.select('.nv-x2.nv-axis')
+         .attr('transform', 'translate(0,' + (y.range()[0] + x2Offset) + ')')
+         .transition()
+         .call(x2Axis);
       }
 
       if (showYAxis) {
+        var yOffset = axisOffset.yAxis;
         yAxis
           .scale(y)
-          .ticks( availableHeight / 36 )
-          .tickSize( -availableWidth, 0);
-
+          .ticks(availableHeight / 36)
+          .tickSize(-availableWidth, 0);
         g.select('.nv-y.nv-axis')
-            .transition()
-            .call(yAxis);
+         .attr('transform', 'translate(0, ' + yOffset + ')')
+         .transition()
+         .call(yAxis);
       }
-      //------------------------------------------------------------
 
 
-      //============================================================
-      // Event Handling/Dispatching (in chart's scope)
-      //------------------------------------------------------------
+
+      // -------------------- Event Handling/Dispatching (in chart's scope)
 
       legend.dispatch.on('stateChange', function(newState) {
           state = newState;
@@ -1715,7 +1704,8 @@ nv.models.flLineChart = function() {
                   color: color(series,series.seriesIndex)
               });
           });
-          //Highlight the tooltip entry based on which point the mouse is closest to.
+
+          // -- Highlight the tooltip entry based on which point the mouse is closest to.
           if (allData.length > 2) {
             var yValue = chart.yScale().invert(e.mouseY);
             var domainExtent = Math.abs(chart.yScale().domain()[0] - chart.yScale().domain()[1]);
@@ -1739,9 +1729,7 @@ nv.models.flLineChart = function() {
                         series: allData
                       }
                   )();
-
           interactiveLayer.renderGuideLine(pointXLocation);
-
       });
 
       interactiveLayer.dispatch.on("elementMouseout",function(e) {
@@ -1755,29 +1743,22 @@ nv.models.flLineChart = function() {
 
 
       dispatch.on('changeState', function(e) {
-
         if (typeof e.disabled !== 'undefined' && data.length === e.disabled.length) {
           data.forEach(function(series,i) {
             series.disabled = e.disabled[i];
           });
-
           state.disabled = e.disabled;
         }
-
         chart.update();
       });
-
-      //============================================================
-
     });
 
     return chart;
   }
 
 
-  //============================================================
-  // Event Handling/Dispatching (out of chart's scope)
-  //------------------------------------------------------------
+
+  // ------------------------ Event Handling/Dispatching (out of chart's scope)
 
   lines.dispatch.on('elementMouseover.tooltip', function(e) {
     e.pos = [e.pos[0] +  margin.left, e.pos[1] + margin.top];
@@ -1792,18 +1773,15 @@ nv.models.flLineChart = function() {
     if (tooltips) nv.tooltip.cleanup();
   });
 
-  //============================================================
 
 
-  //============================================================
-  // Expose Public Variables
-  //------------------------------------------------------------
+  // ------------------------ EXPOSE PUBLIC VARIABLES
 
-  // expose chart's sub-components
   chart.dispatch = dispatch;
   chart.lines = lines;
   chart.legend = legend;
   chart.xAxis = xAxis;
+  chart.x2Axis = x2Axis;
   chart.yAxis = yAxis;
   chart.interactiveLayer = interactiveLayer;
 
@@ -1849,6 +1827,12 @@ nv.models.flLineChart = function() {
   chart.axisOffset = function(_) {
     if (!arguments.length) return axisOffset;
     axisOffset = _;
+    return chart;
+  };
+
+  chart.x2AxisOffset = function(_) {
+    if (!arguments.length) return x2AxisOffset;
+    x2AxisOffset = _;
     return chart;
   };
 
@@ -1922,9 +1906,6 @@ nv.models.flLineChart = function() {
     transitionDuration = _;
     return chart;
   };
-
-  //============================================================
-
 
   return chart;
 }
